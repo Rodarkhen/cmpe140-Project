@@ -104,7 +104,7 @@ int main(int argc, char **argv)
     int index = 0;         // instruction number
     bool dmem_wen = false; // Write enable for data memory (1 for Store, 0 for Load)
     int count = 0;         // index for going through imem
-
+    subInstruction = "";
     // Reads a file with instructions
     while (getline(inputFile, line))
     {
