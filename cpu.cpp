@@ -8,6 +8,11 @@
 
 int main(int argc, char **argv)
 {
+    if (argc < 2 || argc > 3)
+    {
+        std::cout << "Wrong Usage." << std::endl;
+        exit(1);
+    }
     instructionMemory in_instructions[50]; //  the 32 bits instruction place in an array
     reg registers[32];                     // 32 registers
     dmem mem[128];                         // 128 mem
@@ -77,7 +82,7 @@ int main(int argc, char **argv)
     // Variables for user inputs
     std::string currentInput = "";
     std::string prevInput = "";
-    bool r = false;
+    bool r = false; // runs everything
     bool brk = false;
     bool printMem = false;
     // Variables for decoding instructions
@@ -117,9 +122,10 @@ int main(int argc, char **argv)
             while ((prevInput.compare("s") || prevInput.compare("pc")) && !brk && !r)
             /*prevInput is not equal to "s" || prevInput is not equal to "pc" && brk is false && r is false.*/
             {
-                std::cout << "-------------------------------" << std::endl;
-                std::cout << "\e[1mEnter command:\e[0m "; // bolded
+                std::cout << "--------------------------------------------------" << std::endl;
+                std::cout << "Enter command: ";
                 std::cin >> currentInput;
+                std::cout << "--------------------------------------------------" << std::endl;
                 std::string hex = currentInput.substr(0, 2);
                 std::string reg = currentInput.substr(0, 1);
 
@@ -763,16 +769,17 @@ int main(int argc, char **argv)
     } // End of While loop
 
     inputFile.close();
-    std::cout << "   _____________________________" << std::endl;
-    std::cout << "  |         REGISTERS           |" << std::endl;
-    std::cout << "  |_____________________________|" << std::endl;
-    std::cout << "  |    Number   |     Value     |" << std::endl;
-    std::cout << "  |_____________|_______________|" << std::endl;
+    std::cout << "   ____________________________________" << std::endl;
+    std::cout << "  |             REGISTERS              |" << std::endl;
+    std::cout << "  |____________________________________|" << std::endl;
+    std::cout << "  |  Name   |  Number  |     Value     |" << std::endl;
+    std::cout << "  |_________|__________|_______________|" << std::endl;
     for (int i = 0; i < 32; i++)
     {
-        std::cout << "  | " << std::setw(11) << i << " |  " << std::setw(12) << registers[i].value << " |" << std::endl;
+        std::cout << "  | " << std::setw(7) << registerNames[i] << " | " << std::setw(8) << i << " | " << std::setw(13) << registers[i].value << " |" << std::endl;
     }
-    std::cout << "  |_____________|_______________|" << std::endl;
+    std::cout << "  |_________|__________|_______________|" << std::endl
+              << std::endl;
 
     // printing mem
     if (printMem)
@@ -784,7 +791,10 @@ int main(int argc, char **argv)
         {
             std::cout << " |Number: " << std::setw(4) << i << " | Address: " << std::setw(12) << mem[i].address << " | Data: " << std::setw(12) << mem[i].data << " |" << std::endl;
         }
-        std::cout << " |_____________|_______________________|____________________|" << std::endl;
+        std::cout << " |_____________|_______________________|____________________|" << std::endl
+                  << std::endl;
+
+        std::cout << "END OF PROGRAM" << std::endl;
     }
     return 0;
 }
