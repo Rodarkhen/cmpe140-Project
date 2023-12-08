@@ -239,7 +239,7 @@ int main(int argc, char **argv)
                 {
                     // to add immediate value, we take the value from immediate and add it to the rs1.
                     // After we do this we store to the results from adding these two to the destination register rd.
-                    std::cout << "ADDI x" << rd << ", x" << rs1 << ", " << immed << std::endl;
+                    std::cout << "ADDI " << registerNames[rd] << "," << registerNames[rs1] << ", " << immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     registers[rd].value = temp_rs1 + immed;
                     registers[rd].used = true;
@@ -249,7 +249,7 @@ int main(int argc, char **argv)
                 }
                 case STLI: // Pick the value of rs1 or registers[rs1].value
                 {
-                    std::cout << "STLI x" << rd << ", x" << rs1 << ", " << immed << std::endl;
+                    std::cout << "STLI " << registerNames[rd] << ", " << registerNames[rs1] << ", " << immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1; // check if temp_rs1 is less that imm value, then set registers[rd] to 1
                     if (temp_rs1 < immed)
                     {
@@ -266,7 +266,7 @@ int main(int argc, char **argv)
                 }
                 case SLTIU: // Set less than unsigned
                 {           // set the value if temp_rs1 is less than imm value
-                    std::cout << "SLTIU x" << rd << ", x" << rs1 << ", " << immed << std::endl;
+                    std::cout << "SLTIU " << registerNames[rd] << ", " << registerNames[rs1] << ", " << immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1; // check if temp_rs1 is less that imm value, then set registers[rd] to 1
                     if ((unsigned int)temp_rs1 < immed)
                     {
@@ -283,7 +283,7 @@ int main(int argc, char **argv)
                 }
                 case XORI: // Exclusive or
                 {
-                    std::cout << "XORI x" << rd << ", x" << rs1 << ", " << immed << std::endl;
+                    std::cout << "XORI " << registerNames[rd] << ", " << registerNames[rs1] << ", " << immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1; // check if temp_rs1 is less that imm value, then set registers[rd] to 1
                     registers[rd].value = temp_rs1 ^ immed;                          //
                     registers[rd].used = true;
@@ -293,8 +293,8 @@ int main(int argc, char **argv)
                 }
                 case ORI: // Bitwise Or with immediate
                 {
-                    std::cout << "ORI x" << rd << ", x" << rs1 << ", " << immed << std::endl; // check if temp_rs1 is less that imm value, then set registers[rd] to 1
-                    int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;          // d_write[rs1].value : rs1
+                    std::cout << "ORI " << registerNames[rd] << ", " << registerNames[rs1] << ", " << immed << std::endl; // check if temp_rs1 is less that imm value, then set registers[rd] to 1
+                    int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;                                      // d_write[rs1].value : rs1
                     registers[rd].value = temp_rs1 ^ immed;
                     registers[rd].used = true;
                     std::cout << "result: " << registers[rd].value << std::endl
@@ -303,7 +303,7 @@ int main(int argc, char **argv)
                 }
                 case ANDI: // Bitwise And with immediate
                 {
-                    std::cout << "ANDI x" << rd << ", x" << rs1 << ", " << immed << std::endl;
+                    std::cout << "ANDI " << registerNames[rd] << ", " << registerNames[rs1] << ", " << immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     registers[rd].value = temp_rs1 & immed;
                     registers[rd].used = true;
@@ -313,7 +313,7 @@ int main(int argc, char **argv)
                 }
                 case SLLI: // Shift left logical with immediate
                 {
-                    std::cout << "SLLI x" << rd << ", x" << rs1 << ", " << immed << std::endl;
+                    std::cout << "SLLI " << registerNames[rd] << ", " << registerNames[rs1] << ", " << immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     registers[rd].value = temp_rs1 << immed;
                     registers[rd].used = true;
@@ -329,12 +329,12 @@ int main(int argc, char **argv)
                     int shift_amount = immed & 0b00011111;
                     if (R_immed == 0b0100000)
                     {
-                        std::cout << "SRAI x" << rd << ", x" << rs1 << ", " << immed << std::endl;
+                        std::cout << "SRAI " << registerNames[rd] << ", " << registerNames[rs1] << ", " << immed << std::endl;
                         registers[rd].value = temp_rs1 >> shift_amount;
                     }
                     else
                     {
-                        std::cout << "SRLI x" << rd << ", x" << rs1 << ", " << immed << std::endl;
+                        std::cout << "SRLI " << registerNames[rd] << ", " << registerNames[rs1] << ", " << immed << std::endl;
                         registers[rd].value = (unsigned)temp_rs1 >> shift_amount;
                     }
                     registers[rd].used = true;
@@ -360,12 +360,12 @@ int main(int argc, char **argv)
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (R_immed == 0b0100000)
                     { // func7 code (0100000 = sub)
-                        std::cout << "SUB x" << rd << ", x" << rs1 << ", x" << rs2 << std::endl;
+                        std::cout << "SUB " << registerNames[rd] << ", " << registerNames[rs1] << ", " << registerNames[rs2] << std::endl;
                         registers[rd].value = temp_rs1 - temp_rs2;
                     }
                     else
                     {
-                        std::cout << "ADD x" << rd << ", x" << rs1 << ", x" << rs2 << std::endl;
+                        std::cout << "ADD " << registerNames[rd] << ", " << registerNames[rs1] << ", " << registerNames[rs2] << std::endl;
                         registers[rd].value = temp_rs1 + temp_rs2;
                     }
                     registers[rd].used = true;
@@ -375,7 +375,7 @@ int main(int argc, char **argv)
                 }
                 case SLL: // Shift Left Logical
                 {
-                    std::cout << "SLL x" << rd << ", x" << rs1 << ", x" << rs2 << std::endl;
+                    std::cout << "SLL " << registerNames[rd] << ", " << registerNames[rs1] << ", " << registerNames[rs2] << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     registers[rd].value = temp_rs1 << temp_rs2;
@@ -386,7 +386,7 @@ int main(int argc, char **argv)
                 }
                 case SLT: //
                 {
-                    std::cout << "SLT x" << rd << ", x" << rs1 << ", x" << rs2 << std::endl;
+                    std::cout << "SLT " << registerNames[rd] << ", " << registerNames[rs1] << ", " << registerNames[rs2] << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
 
@@ -405,7 +405,7 @@ int main(int argc, char **argv)
                 }
                 case SLTU: // Set Less Than Imme (unnsigne)
                 {
-                    std::cout << "SLTU x" << rd << ", x" << rs1 << ", x" << rs2 << std::endl;
+                    std::cout << "SLTU " << registerNames[rd] << ", " << registerNames[rs1] << ", " << registerNames[rs2] << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 < temp_rs2)
@@ -423,7 +423,7 @@ int main(int argc, char **argv)
                 }
                 case XOR: // Exclusion Or
                 {
-                    std::cout << "XOR x" << rd << ", x" << rs1 << ", x" << rs2 << std::endl;
+                    std::cout << "XOR " << registerNames[rd] << ", " << registerNames[rs1] << ", " << registerNames[rs2] << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     registers[rd].value = temp_rs1 ^ temp_rs2;
@@ -442,12 +442,12 @@ int main(int argc, char **argv)
                     temp_rs2 = temp_rs2 & bitmask;
                     if (R_immed == 0b0100000)
                     { // shift amount is the last 5 bits of registers[rs2]
-                        std::cout << "SRA x" << rd << ", x" << rs1 << ", x" << rs2 << std::endl;
+                        std::cout << "SRA " << registerNames[rd] << ", " << registerNames[rs1] << ", " << registerNames[rs2] << std::endl;
                         registers[rd].value = temp_rs1 >> temp_rs2;
                     }
                     else
                     {
-                        std::cout << "SRL x" << rd << ", x" << rs1 << ", x" << rs2 << std::endl;
+                        std::cout << "SRL " << registerNames[rd] << ", " << registerNames[rs1] << ", " << registerNames[rs2] << std::endl;
                         registers[rd].value = (unsigned int)temp_rs1 >> temp_rs2;
                     }
                     registers[rd].used = true;
@@ -457,7 +457,7 @@ int main(int argc, char **argv)
                 }
                 case OR: // Bitwise Or
                 {
-                    std::cout << "OR x" << rd << ", x" << rs1 << ", x" << rs2 << std::endl;
+                    std::cout << "OR " << registerNames[rd] << ", " << registerNames[rs1] << ", " << registerNames[rs2] << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     registers[rd].value = temp_rs1 | temp_rs2;
@@ -468,7 +468,7 @@ int main(int argc, char **argv)
                 }
                 case AND: // Bitwise And
                 {
-                    std::cout << "AND x" << rd << ", x" << rs1 << ", x" << rs2 << std::endl;
+                    std::cout << "AND " << registerNames[rd] << ", " << registerNames[rs1] << ", " << registerNames[rs2] << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     registers[rd].value = temp_rs1 & temp_rs2;
@@ -487,7 +487,7 @@ int main(int argc, char **argv)
             }
             case LUI: // Load Upper Immediate
             {
-                std::cout << "LUI x" << rd << ", " << UI_Immed << std::endl;
+                std::cout << "LUI " << registerNames[rd] << ", " << UI_Immed << std::endl;
                 registers[rd].value = UI_Immed << 12;
                 registers[rd].used = true;
                 std::cout << "result: " << registers[rd].value << std::endl
@@ -496,7 +496,7 @@ int main(int argc, char **argv)
             }
             case AUIPC: // Add Upper Imm to PC
             {
-                std::cout << "AUIPC x" << rd << ", " << UI_Immed << std::endl;
+                std::cout << "AUIPC " << registerNames[rd] << ", " << UI_Immed << std::endl;
                 registers[rd].value = PC + (UI_Immed << 12);
                 registers[rd].used = true;
                 std::cout << "result: " << registers[rd].value << std::endl
@@ -505,7 +505,7 @@ int main(int argc, char **argv)
             }
             case JAL: // Jump and Link
             {
-                std::cout << "JAL x" << rd << ", " << UJ_Immed << std::endl;
+                std::cout << "JAL " << registerNames[rd] << ", " << UJ_Immed << std::endl;
                 // cannot change value of x0
                 if (rd != 0)
                 {
@@ -521,7 +521,7 @@ int main(int argc, char **argv)
             }
             case JALR: // Jump and Link with register
             {
-                std::cout << "JALR x" << rd << ", " << immed << "(x" << rs1 << ")" << std::endl;
+                std::cout << "JALR " << registerNames[rd] << ", " << immed << "(" << registerNames[rs1] << ")" << std::endl;
                 jumping = immed + rs1;
                 PC = immed + rs1 + PC;
                 jumped = true;
@@ -533,7 +533,7 @@ int main(int argc, char **argv)
                 {
                 case BEQ: // Branch if equal
                 {
-                    std::cout << "BEQ x" << rs1 << ", x" << rs2 << ", " << Branch_Immed << std::endl;
+                    std::cout << "BEQ " << registerNames[rs1] << ", " << registerNames[rs2] << ", " << Branch_Immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 == temp_rs2)
@@ -554,7 +554,7 @@ int main(int argc, char **argv)
                 }
                 case BNE: // Branch if not equal
                 {
-                    std::cout << "BNE x" << rs1 << ", x" << rs2 << ", " << Branch_Immed << std::endl;
+                    std::cout << "BNE " << registerNames[rs1] << ", " << registerNames[rs2] << ", " << Branch_Immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 != temp_rs2)
@@ -574,7 +574,7 @@ int main(int argc, char **argv)
                 }
                 case BLT: // Branch if Less than
                 {
-                    std::cout << "BLT x" << rs1 << ", x" << rs2 << ", " << Branch_Immed << std::endl;
+                    std::cout << "BLT " << registerNames[rs1] << ", " << registerNames[rs2] << ", " << Branch_Immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 < temp_rs2)
@@ -594,7 +594,7 @@ int main(int argc, char **argv)
                 }
                 case BGE: // Branch if greater than or equal
                 {
-                    std::cout << "BGE x" << rs1 << ", x" << rs2 << ", " << Branch_Immed << std::endl;
+                    std::cout << "BGE " << registerNames[rs1] << ", " << registerNames[rs2] << ", " << Branch_Immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 >= temp_rs2)
@@ -614,7 +614,7 @@ int main(int argc, char **argv)
                 }
                 case BLTU: // Branch if Less Than (unsigned)
                 {
-                    std::cout << "BLTU x" << rs1 << ", x" << rs2 << ", " << Branch_Immed << std::endl;
+                    std::cout << "BLTU " << registerNames[rs1] << ", " << registerNames[rs2] << ", " << Branch_Immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if ((unsigned)temp_rs1 < (unsigned)temp_rs2)
@@ -634,7 +634,7 @@ int main(int argc, char **argv)
                 }
                 case BGEU: // Branch if Greater or Equal to (unsigned)
                 {
-                    std::cout << "BGEU x" << rs1 << ", x" << rs2 << ", " << Branch_Immed << std::endl;
+                    std::cout << "BGEU " << registerNames[rs1] << ", " << registerNames[rs2] << ", " << Branch_Immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if ((unsigned)temp_rs1 >= (unsigned)temp_rs2)
@@ -673,7 +673,7 @@ int main(int argc, char **argv)
             {
             case Load_format: // Load word
             {
-                std::cout << "LW x" << rd << ", " << immed << "(x" << rs1 << ")" << std::endl;
+                std::cout << "LW " << registerNames[rd] << ", " << immed << "(" << registerNames[rs1] << ")" << std::endl;
                 dmem_wen = false;
                 printMem = true;
                 // load word
@@ -687,7 +687,7 @@ int main(int argc, char **argv)
             {
                 dmem_wen = true;
                 printMem = true;
-                std::cout << "STORE x" << rs2 << ", " << StoreImmed << "(x" << rs1 << ")" << std::endl;
+                std::cout << "STORE " << registerNames[rs2] << ", " << StoreImmed << "(" << registerNames[rs1] << ")" << std::endl;
                 // store word
                 int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                 int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
