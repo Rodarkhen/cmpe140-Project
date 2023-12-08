@@ -10,12 +10,12 @@ int main(int argc, char **argv)
 {
     if (argc < 2 || argc > 3)
     {
-        std::cout << "Wrong Usage." << std::endl;
+        std::cout << "Wrong USAGE" << std::endl;
         exit(1);
     }
     instructionMemory in_instructions[50]; //  the 32 bits instruction place in an array
-    reg registers[32];                     // 32 registers
-    dmem mem[128];                         // 128 mem
+    Reg registers[32];                     // 32 registers
+    Dmem mem[128];                         // 128 mem
 
     int32_t initialAddr = 268500992;
     for (int i = 0; i < 128; i++)
@@ -25,26 +25,26 @@ int main(int argc, char **argv)
         initialAddr += 4;
     }
 
-    int PC = 0;      // keeping track of PC
-    int jumping = 0; // for jumping instructions
+    int PC = 0;     // Keeping track of PC
+    int toJump = 0; // For jump instructions
 
     std::string filename = argv[1];
     // Opening file
     std::ifstream inputFile;
     inputFile.open(filename);
-    if (!inputFile.is_open())
+    if (!inputFile.is_open()) // if fail to open
     {
         std::cout << "Unable to open file" << std::endl;
         exit(1);
     }
 
-    // getline vars
+    // Get instructions from files
     int lineCount = 0;
     std::string line;
 
     int idx = 0; // index of mem
 
-    // if second file param entered->dmem file
+    // If second file param entered -> dmem file
     if (argc == 3) //./test line.dat dmem.dat
     {
         std::string subInstruction = "";
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
                 int32_t data = 0;
                 lineCount = 0;
 
-                data = (subInstruction[0] == '1')              // d is determined by index 0 the in order to be place as data
+                data = (subInstruction[0] == '1')              // data is determined by index 0 the in order to be place as data
                            ? twosComplement(subInstruction)    // determines if it is negative or positive
                            : stol(subInstruction, nullptr, 2); // converts to decimals
 
@@ -75,10 +75,6 @@ int main(int argc, char **argv)
             }
         }
     }
-
-    int index = 0;         // instruction number
-    bool dmem_wen = false; // Write enable for data memory (1 for Store, 0 for Load)
-
     // Variables for user inputs
     std::string currentInput = "";
     std::string prevInput = "";
@@ -100,14 +96,16 @@ int main(int argc, char **argv)
     bool branched = false;
     bool jumped = false;
 
+    int index = 0;         // instruction number
+    bool dmem_wen = false; // Write enable for data memory (1 for Store, 0 for Load)
+    int count = 0;         // index for going through imem
+
     // Reads a file with instructions (32'b instruction per line)
     while (getline(inputFile, line))
     {
         in_instructions[index].instruction = line;
         index++;
     }
-
-    int count = 0; // index for going through imem
 
     // Shows available options fo the user
     printOptions();
@@ -117,26 +115,26 @@ int main(int argc, char **argv)
         //=============//
         // FETCH STAGE //
         //=============//
-        if ((jumping == 0))
+        if ((toJump == 0))
         {
-            while ((prevInput.compare("s") || prevInput.compare("pc")) && !brk && !r)
             /*prevInput is not equal to "s" || prevInput is not equal to "pc" && brk is false && r is false.*/
+            while ((prevInput.compare("s") || prevInput.compare("pc")) && !brk && !r)
             {
-                std::cout << "--------------------------------------------------" << std::endl;
+                std::cout << "-------------------------" << std::endl;
                 std::cout << "Enter command: ";
                 std::cin >> currentInput;
-                std::cout << "--------------------------------------------------" << std::endl;
+                std::cout << "- - - - - - - - - - - - -" << std::endl;
                 std::string hex = currentInput.substr(0, 2);
                 std::string reg = currentInput.substr(0, 1);
 
                 if (currentInput.compare("r") == 0)
-                { // runs everything
+                { // Runs everything
                     prevInput = "r";
                     brk = true;
                     r = true;
                 }
                 else if (currentInput.compare("s") == 0)
-                { // runs next instruction + then stop
+                { // Runs next instruction + then stop
                     prevInput = "s";
                     brk = true;
                 }
@@ -194,13 +192,13 @@ int main(int argc, char **argv)
             immed = (in_instructions[count].immed[0] == '1') ? twosComplement(in_instructions[count].immed) : stol(in_instructions[count].immed, nullptr, 2);
             // rs1
             in_instructions[count].rs1 = in_instructions[count].instruction.substr(12, 5);
-            rs1 = binaryToDecimal(stol(in_instructions[count].rs1, nullptr, 10));
+            rs1 = binToDec(stol(in_instructions[count].rs1, nullptr, 10));
             // func3
             in_instructions[count].func3 = in_instructions[count].instruction.substr(17, 3);
             func3 = stoi(in_instructions[count].func3, nullptr, 10);
             // rd
             in_instructions[count].rd = in_instructions[count].instruction.substr(20, 5);
-            rd = binaryToDecimal(stol(in_instructions[count].rd, nullptr, 10));
+            rd = binToDec(stol(in_instructions[count].rd, nullptr, 10));
             // opcode
             in_instructions[count].opcode = in_instructions[count].instruction.substr(25, 7);
             opcode = stoi(in_instructions[count].opcode, nullptr, 10);
@@ -208,15 +206,15 @@ int main(int argc, char **argv)
             // R-type format //
             // R_immed
             in_instructions[count].R_immed = in_instructions[count].instruction.substr(0, 7);
-            R_immed = binaryToDecimal(stol(in_instructions[count].R_immed, nullptr, 10));
+            R_immed = binToDec(stol(in_instructions[count].R_immed, nullptr, 10));
             // rs2
             in_instructions[count].rs2 = in_instructions[count].instruction.substr(7, 5);
-            rs2 = binaryToDecimal(stol(in_instructions[count].rs2, nullptr, 10));
+            rs2 = binToDec(stol(in_instructions[count].rs2, nullptr, 10));
             // rs1, func3, rd, opcode are similar to the I-Type format
 
             // Store format
             in_instructions[count].StoreImmed = in_instructions[count].R_immed + in_instructions[count].rd;
-            StoreImmed = binaryToDecimal(stol(in_instructions[count].StoreImmed, nullptr, 10));
+            StoreImmed = binToDec(stol(in_instructions[count].StoreImmed, nullptr, 10));
 
             // U format
             in_instructions[count].UI_Immed = in_instructions[count].instruction.substr(0, 20);
@@ -228,7 +226,7 @@ int main(int argc, char **argv)
 
             // branch format --lowest bit offest is always 0
             in_instructions[count].Branch_Immed = in_instructions[count].R_immed.substr(0, 1) + in_instructions[count].rd.substr(4, 1) + in_instructions[count].R_immed.substr(1, 6) + in_instructions[count].rd.substr(0, 4) + '0';
-            Branch_Immed = binaryToDecimal(stol(in_instructions[count].Branch_Immed, nullptr, 10));
+            Branch_Immed = binToDec(stol(in_instructions[count].Branch_Immed, nullptr, 10));
             Branch_Immed = (in_instructions[count].Branch_Immed[0] == '1') ? twosComplement(in_instructions[count].Branch_Immed) : stol(in_instructions[count].Branch_Immed, nullptr, 2);
             //====================================================//
 
@@ -249,7 +247,7 @@ int main(int argc, char **argv)
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     registers[rd].value = temp_rs1 + immed;
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -258,15 +256,11 @@ int main(int argc, char **argv)
                     std::cout << "STLI " << registerNames[rd] << ", " << registerNames[rs1] << ", " << immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1; // check if temp_rs1 is less that imm value, then set registers[rd] to 1
                     if (temp_rs1 < immed)
-                    {
                         registers[rd].value = 1;
-                    }
                     else
-                    {
                         registers[rd].value = 0;
-                    }
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -275,15 +269,11 @@ int main(int argc, char **argv)
                     std::cout << "SLTIU " << registerNames[rd] << ", " << registerNames[rs1] << ", " << immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1; // check if temp_rs1 is less that imm value, then set registers[rd] to 1
                     if ((unsigned int)temp_rs1 < immed)
-                    {
                         registers[rd].value = 1;
-                    }
                     else
-                    {
                         registers[rd].value = 0;
-                    }
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -293,7 +283,7 @@ int main(int argc, char **argv)
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1; // check if temp_rs1 is less that imm value, then set registers[rd] to 1
                     registers[rd].value = temp_rs1 ^ immed;                          //
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -303,7 +293,7 @@ int main(int argc, char **argv)
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;                                      // d_write[rs1].value : rs1
                     registers[rd].value = temp_rs1 ^ immed;
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -313,7 +303,7 @@ int main(int argc, char **argv)
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     registers[rd].value = temp_rs1 & immed;
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -323,7 +313,7 @@ int main(int argc, char **argv)
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     registers[rd].value = temp_rs1 << immed;
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -344,18 +334,18 @@ int main(int argc, char **argv)
                         registers[rd].value = (unsigned)temp_rs1 >> shift_amount;
                     }
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
                 default:
                 {
-                    std::cout << "not valid I-TYPE instruction" << std::endl;
+                    // std::cout << "not valid I-TYPE instruction" << std::endl;
                     break;
                 }
                 }
                 break;
-            }
+            } // End of I_type_format
             case R_type_format:
             {
                 switch (func3)
@@ -375,7 +365,7 @@ int main(int argc, char **argv)
                         registers[rd].value = temp_rs1 + temp_rs2;
                     }
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -386,7 +376,7 @@ int main(int argc, char **argv)
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     registers[rd].value = temp_rs1 << temp_rs2;
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -405,25 +395,21 @@ int main(int argc, char **argv)
                         registers[rd].value = 0;
                     }
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
-                case SLTU: // Set Less Than Imme (unnsigne)
+                case SLTU: // Set Less Than Imme (unsigned)
                 {
                     std::cout << "SLTU " << registerNames[rd] << ", " << registerNames[rs1] << ", " << registerNames[rs2] << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 < temp_rs2)
-                    {
                         registers[rd].value = 1;
-                    }
                     else
-                    {
                         registers[rd].value = 0;
-                    }
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -434,7 +420,7 @@ int main(int argc, char **argv)
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     registers[rd].value = temp_rs1 ^ temp_rs2;
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -442,7 +428,6 @@ int main(int argc, char **argv)
                 {
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
-
                     // Bitmask to extract last 5 bits of the shift amount
                     int bitmask = 0b00011111;
                     temp_rs2 = temp_rs2 & bitmask;
@@ -457,7 +442,7 @@ int main(int argc, char **argv)
                         registers[rd].value = (unsigned int)temp_rs1 >> temp_rs2;
                     }
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -468,7 +453,7 @@ int main(int argc, char **argv)
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     registers[rd].value = temp_rs1 | temp_rs2;
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
@@ -479,24 +464,23 @@ int main(int argc, char **argv)
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     registers[rd].value = temp_rs1 & temp_rs2;
                     registers[rd].used = true;
-                    std::cout << "result: " << registers[rd].value << std::endl
+                    std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
                     break;
                 }
                 default:
                 {
-                    // std::cout<<"Invalid R-TYPE instruction" << std::endl;
                     break;
                 }
                 }
                 break;
-            }
+            }         // End of R_type_format
             case LUI: // Load Upper Immediate
             {
                 std::cout << "LUI " << registerNames[rd] << ", " << UI_Immed << std::endl;
                 registers[rd].value = UI_Immed << 12;
                 registers[rd].used = true;
-                std::cout << "result: " << registers[rd].value << std::endl
+                std::cout << "Result: " << registers[rd].value << std::endl
                           << std::endl;
                 break;
             }
@@ -505,7 +489,7 @@ int main(int argc, char **argv)
                 std::cout << "AUIPC " << registerNames[rd] << ", " << UI_Immed << std::endl;
                 registers[rd].value = PC + (UI_Immed << 12);
                 registers[rd].used = true;
-                std::cout << "result: " << registers[rd].value << std::endl
+                std::cout << "Result: " << registers[rd].value << std::endl
                           << std::endl;
                 break;
             }
@@ -518,17 +502,17 @@ int main(int argc, char **argv)
                     registers[rd].value = PC + 4;
                     registers[rd].used = true;
                 }
-                jumping = UJ_Immed;
+                toJump = UJ_Immed;
                 jumped = true;
                 PC += UJ_Immed;
-                std::cout << "reg/return address: " << registers[rd].value << " PC: " << PC << std::endl
+                std::cout << "Reg/RA: " << registers[rd].value << " | PC: " << PC << std::endl
                           << std::endl;
                 break;
             }
             case JALR: // Jump and Link with register
             {
                 std::cout << "JALR " << registerNames[rd] << ", " << immed << "(" << registerNames[rs1] << ")" << std::endl;
-                jumping = immed + rs1;
+                toJump = immed + rs1;
                 PC = immed + rs1 + PC;
                 jumped = true;
                 break;
@@ -544,15 +528,15 @@ int main(int argc, char **argv)
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 == temp_rs2)
                     {
-                        std::cout << "equal to" << std::endl
+                        std::cout << "Equal to" << std::endl
                                   << std::endl;
-                        jumping = Branch_Immed;
+                        toJump = Branch_Immed;
                         PC += Branch_Immed;
                         branched = true;
                     }
                     else
                     {
-                        std::cout << "not branching" << std::endl
+                        std::cout << "Skip branching" << std::endl
                                   << std::endl;
                     }
 
@@ -565,15 +549,15 @@ int main(int argc, char **argv)
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 != temp_rs2)
                     {
-                        std::cout << "not equal to" << std::endl
+                        std::cout << "Not equal to" << std::endl
                                   << std::endl;
-                        jumping = Branch_Immed;
+                        toJump = Branch_Immed;
                         PC += Branch_Immed;
                         branched = true;
                     }
                     else
                     {
-                        std::cout << "not branching" << std::endl
+                        std::cout << "Skip branching" << std::endl
                                   << std::endl;
                     }
                     break;
@@ -585,15 +569,15 @@ int main(int argc, char **argv)
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 < temp_rs2)
                     {
-                        std::cout << "less than" << std::endl
+                        std::cout << "Less than" << std::endl
                                   << std::endl;
-                        jumping = Branch_Immed;
+                        toJump = Branch_Immed;
                         PC += Branch_Immed;
                         branched = true;
                     }
                     else
                     {
-                        std::cout << "not branching" << std::endl
+                        std::cout << "Skip branching" << std::endl
                                   << std::endl;
                     }
                     break;
@@ -605,15 +589,15 @@ int main(int argc, char **argv)
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 >= temp_rs2)
                     {
-                        std::cout << "greater than or equal" << std::endl
+                        std::cout << "Greater than or equal" << std::endl
                                   << std::endl;
-                        jumping = Branch_Immed;
+                        toJump = Branch_Immed;
                         PC += Branch_Immed;
                         branched = true;
                     }
                     else
                     {
-                        std::cout << "not branching" << std::endl
+                        std::cout << "Skip branching" << std::endl
                                   << std::endl;
                     }
                     break;
@@ -625,15 +609,15 @@ int main(int argc, char **argv)
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if ((unsigned)temp_rs1 < (unsigned)temp_rs2)
                     {
-                        std::cout << "less than" << std::endl
+                        std::cout << "Less than" << std::endl
                                   << std::endl;
-                        jumping = Branch_Immed;
+                        toJump = Branch_Immed;
                         PC += Branch_Immed;
                         branched = true;
                     }
                     else
                     {
-                        std::cout << "not branching" << std::endl
+                        std::cout << "Skip branching" << std::endl
                                   << std::endl;
                     }
                     break;
@@ -647,20 +631,20 @@ int main(int argc, char **argv)
                     {
                         std::cout << "greater or equal to" << std::endl
                                   << std::endl;
-                        jumping = Branch_Immed;
+                        toJump = Branch_Immed;
                         PC += Branch_Immed;
                         branched = true;
                     }
                     else
                     {
-                        std::cout << "not branching" << std::endl
+                        std::cout << "Skip branching" << std::endl
                                   << std::endl;
                     }
                     break;
                 }
                 default:
                 {
-                    // std::cout<<"not valid branch instruction"<<std::endl;
+                    // std::cout<<"Invalid branch instruction" << std::endl;
                     break;
                 }
                 }
@@ -672,8 +656,9 @@ int main(int argc, char **argv)
                 break;
             }
             }
-            //====================================================//
-            // MEM ACCESS
+            //============//
+            // MEM ACCESS //
+            //============//
             int temp_address = 0;
             switch (opcode)
             {
@@ -682,13 +667,12 @@ int main(int argc, char **argv)
                 std::cout << "LW " << registerNames[rd] << ", " << immed << "(" << registerNames[rs1] << ")" << std::endl;
                 dmem_wen = false;
                 printMem = true;
-                // load word
                 int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                 int address = temp_rs1 + immed;
                 temp_address = address;
                 std::cout << "address: " << address << std::endl;
                 break;
-            }
+            }                  // End of Load Word
             case Store_format: // Store word
             {
                 dmem_wen = true;
@@ -707,17 +691,17 @@ int main(int argc, char **argv)
                         found = true;
                     }
                 }
-                std::cout << "addr: " << temp_rs1 + StoreImmed << std::endl;
-                std::cout << "result: " << temp_rs2 << std::endl
+                std::cout << "Address: " << temp_rs1 + StoreImmed << std::endl;
+                std::cout << "Result: " << temp_rs2 << std::endl
                           << std::endl;
                 break;
-            }
+            } // End of Store Word
             default:
             {
-                // std::cout << "not valid in mem access" << std::endl;
+                // std::cout << "Ivalid in mem access" << std::endl;
                 break;
             }
-            }
+            } // End of MEM ACESS STAGE
             //==================//
             // WRITE BACK STAGE //
             //==================//
@@ -732,7 +716,7 @@ int main(int argc, char **argv)
                         registers[rd].used = true;
                     }
                 }
-                std::cout << "result: " << registers[rd].value << std::endl
+                std::cout << "Result: " << registers[rd].value << std::endl
                           << std::endl; // printing for load
             }
 
@@ -749,26 +733,26 @@ int main(int argc, char **argv)
                 branched = false; // reseting bool
                 jumped = false;
             }
-            if (jumping == 0)
+            if (toJump == 0)
             {
                 count++;
             }
-            else if (jumping > 0)
+            else if (toJump > 0)
             {
-                count = count + (jumping / 4);
-                jumping = 0;
+                count = count + (toJump / 4);
+                toJump = 0;
             }
-            else if (jumping < 0)
+            else if (toJump < 0)
             {
-                count = count - ((-jumping) / 4);
-                jumping = 0;
+                count = count - ((-toJump) / 4);
+                toJump = 0;
             }
         }
         if (count == index) // reaches at the EOF
             break;
     } // End of While loop
-
     inputFile.close();
+
     std::cout << "   ____________________________________" << std::endl;
     std::cout << "  |             REGISTERS              |" << std::endl;
     std::cout << "  |____________________________________|" << std::endl;
@@ -781,7 +765,7 @@ int main(int argc, char **argv)
     std::cout << "  |_________|__________|_______________|" << std::endl
               << std::endl;
 
-    // printing mem
+    // Printing mem
     if (printMem)
     {
         std::cout << "          ____________________________________________" << std::endl;
@@ -794,7 +778,8 @@ int main(int argc, char **argv)
         std::cout << " |_____________|_______________________|____________________|" << std::endl
                   << std::endl;
 
-        std::cout << "END OF PROGRAM" << std::endl;
+        std::cout << "~~~~ END OF PROGRAM ~~~~" << std::endl
+                  << std::endl;
     }
     return 0;
 }

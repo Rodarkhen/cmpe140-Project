@@ -76,27 +76,34 @@ public:
     }
 };
 
-// keep track of reg values
-class reg
+// Keep track of reg values
+class Reg
 {
 public:
-    long value;
+    int32_t value;
     bool used;
     // Constructor
-    reg() : value(0), used(false){};
+    Reg() : value(0), used(false){};
 };
 
-class dmem
+class Dmem
 {
 public:
-    long address;
-    long data;
+    int32_t address;
+    int32_t data;
     // Constructor
-    dmem() : address(0), data(0){};
+    Dmem() : address(0), data(0){};
 };
+
+// Register names
+std::string registerNames[] = {"zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "s1",
+                               "a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "s2", "s3",
+                               "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "t3", "t4",
+                               "t5", "t6"};
 
 void printOptions()
 {
+    std::cout << "============================================================" << std::endl;
     std::cout << "Options:" << std::endl
               << "    - 'r' runs the entire program in one go till it hits a breakpoint or exits." << std::endl
               << "    - 's' runs the next instruction and then stops and waits for next command." << std::endl
@@ -104,17 +111,18 @@ void printOptions()
               << "    - '0x12345678' returns the contents from the address 0x12345678 in the data memory. " << std::endl
               << "       This should work for all 32 bit addresses, the value shown above is an example." << std::endl
               << "    - 'pc' returns the value of the PC" << std::endl;
+    std::cout << "============================================================" << std::endl;
 }
 // Converts signed binary to decimal
-int binaryToDecimal(long n)
+int binToDec(int32_t n)
 {
-    long temp = n;
-    long dec = 0;
-    long base = 1;
+    int32_t temp = n;
+    int32_t dec = 0;
+    int32_t base = 1;
 
     while (temp)
     {
-        long last = temp % 10;
+        int32_t last = temp % 10;
         temp = temp / 10;
         dec += last * base;
         base *= 2;
@@ -124,7 +132,7 @@ int binaryToDecimal(long n)
 }
 
 // Finds two's complement of binary input
-long twosComplement(std::string str)
+int32_t twosComplement(std::string str)
 {
     for (int i = 0; i < str.length(); i++)
     {
@@ -133,15 +141,9 @@ long twosComplement(std::string str)
         else if (str[i] == '0')
             str[i] = '1';
     }
-    long temp = 0;
+    int32_t temp = 0;
     temp = stol(str, nullptr, 2);
     temp *= -1;
     temp -= 1;
     return temp;
 }
-
-// Register names
-std::string registerNames[] = {"zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "s1",
-                               "a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "s2", "s3",
-                               "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "t3", "t4",
-                               "t5", "t6"};
