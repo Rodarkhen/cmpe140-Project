@@ -6,18 +6,13 @@
 #include <iomanip>
 #include "instructions.h"
 
-// Function declarations
-void printOptions();
-int binaryToDecimal(long n);
-long twosComplement(std::string str);
-
 int main(int argc, char **argv)
 {
     instructionMemory in_instructions[50]; //  the 32 bits instruction place in an array
     reg registers[32];                     // 32 registers
     dmem mem[128];                         // 128 mem
 
-    long initialAddr = 268500992;
+    int32_t initialAddr = 268500992;
     for (int i = 0; i < 128; i++)
     {
         mem[i].address = initialAddr;
@@ -62,7 +57,7 @@ int main(int argc, char **argv)
             lineCount++;
             if (lineCount % 4 == 0)
             {
-                long data = 0;
+                int32_t data = 0;
                 lineCount = 0;
 
                 data = (subInstruction[0] == '1')              // d is determined by index 0 the in order to be place as data
@@ -86,17 +81,17 @@ int main(int argc, char **argv)
     bool brk = false;
     bool printMem = false;
     // Variables for decoding instructions
-    long immed = 0;
-    long rs1 = 0;
-    long rd = 0;
-    long opcode = 0;
-    long func3 = 0;
-    long R_immed = 0;
-    long rs2 = 0;
-    long StoreImmed = 0;
-    long UImmed = 0;
-    long bImmed = 0;
-    long UJImmed = 0;
+    int32_t immed = 0;
+    int32_t rs1 = 0;
+    int32_t rd = 0;
+    int32_t opcode = 0;
+    int32_t func3 = 0;
+    int32_t R_immed = 0;
+    int32_t rs2 = 0;
+    int32_t StoreImmed = 0;
+    int32_t UI_Immed = 0;
+    int32_t Branch_Immed = 0;
+    int32_t UJ_Immed = 0;
     bool branched = false;
     bool jumped = false;
 
@@ -218,17 +213,17 @@ int main(int argc, char **argv)
             StoreImmed = binaryToDecimal(stol(in_instructions[count].StoreImmed, nullptr, 10));
 
             // U format
-            in_instructions[count].UImmed = in_instructions[count].instruction.substr(0, 20);
-            UImmed = (in_instructions[count].UImmed[0] == '1') ? twosComplement(in_instructions[count].UImmed) : stol(in_instructions[count].UImmed, nullptr, 2);
+            in_instructions[count].UI_Immed = in_instructions[count].instruction.substr(0, 20);
+            UI_Immed = (in_instructions[count].UI_Immed[0] == '1') ? twosComplement(in_instructions[count].UI_Immed) : stol(in_instructions[count].UI_Immed, nullptr, 2);
 
             // UJ format
-            in_instructions[count].UJImmed = in_instructions[count].instruction.substr(0, 1) + in_instructions[count].instruction.substr(12, 8) + in_instructions[count].instruction.substr(11, 1) + in_instructions[count].instruction.substr(1, 10) + "0";
-            UJImmed = (in_instructions[count].UJImmed[0] == '1') ? twosComplement(in_instructions[count].UJImmed) : stol(in_instructions[count].UJImmed, nullptr, 2);
+            in_instructions[count].UJ_Immed = in_instructions[count].instruction.substr(0, 1) + in_instructions[count].instruction.substr(12, 8) + in_instructions[count].instruction.substr(11, 1) + in_instructions[count].instruction.substr(1, 10) + "0";
+            UJ_Immed = (in_instructions[count].UJ_Immed[0] == '1') ? twosComplement(in_instructions[count].UJ_Immed) : stol(in_instructions[count].UJ_Immed, nullptr, 2);
 
             // branch format --lowest bit offest is always 0
-            in_instructions[count].bImmed = in_instructions[count].R_immed.substr(0, 1) + in_instructions[count].rd.substr(4, 1) + in_instructions[count].R_immed.substr(1, 6) + in_instructions[count].rd.substr(0, 4) + '0';
-            bImmed = binaryToDecimal(stol(in_instructions[count].bImmed, nullptr, 10));
-            bImmed = (in_instructions[count].bImmed[0] == '1') ? twosComplement(in_instructions[count].bImmed) : stol(in_instructions[count].bImmed, nullptr, 2);
+            in_instructions[count].Branch_Immed = in_instructions[count].R_immed.substr(0, 1) + in_instructions[count].rd.substr(4, 1) + in_instructions[count].R_immed.substr(1, 6) + in_instructions[count].rd.substr(0, 4) + '0';
+            Branch_Immed = binaryToDecimal(stol(in_instructions[count].Branch_Immed, nullptr, 10));
+            Branch_Immed = (in_instructions[count].Branch_Immed[0] == '1') ? twosComplement(in_instructions[count].Branch_Immed) : stol(in_instructions[count].Branch_Immed, nullptr, 2);
             //====================================================//
 
             //===============//
@@ -492,8 +487,8 @@ int main(int argc, char **argv)
             }
             case LUI: // Load Upper Immediate
             {
-                std::cout << "LUI x" << rd << ", " << UImmed << std::endl;
-                registers[rd].value = UImmed << 12;
+                std::cout << "LUI x" << rd << ", " << UI_Immed << std::endl;
+                registers[rd].value = UI_Immed << 12;
                 registers[rd].used = true;
                 std::cout << "result: " << registers[rd].value << std::endl
                           << std::endl;
@@ -501,8 +496,8 @@ int main(int argc, char **argv)
             }
             case AUIPC: // Add Upper Imm to PC
             {
-                std::cout << "AUIPC x" << rd << ", " << UImmed << std::endl;
-                registers[rd].value = PC + (UImmed << 12);
+                std::cout << "AUIPC x" << rd << ", " << UI_Immed << std::endl;
+                registers[rd].value = PC + (UI_Immed << 12);
                 registers[rd].used = true;
                 std::cout << "result: " << registers[rd].value << std::endl
                           << std::endl;
@@ -510,16 +505,16 @@ int main(int argc, char **argv)
             }
             case JAL: // Jump and Link
             {
-                std::cout << "JAL x" << rd << ", " << UJImmed << std::endl;
+                std::cout << "JAL x" << rd << ", " << UJ_Immed << std::endl;
                 // cannot change value of x0
                 if (rd != 0)
                 {
                     registers[rd].value = PC + 4;
                     registers[rd].used = true;
                 }
-                jumping = UJImmed;
+                jumping = UJ_Immed;
                 jumped = true;
-                PC += UJImmed;
+                PC += UJ_Immed;
                 std::cout << "reg/return address: " << registers[rd].value << " PC: " << PC << std::endl
                           << std::endl;
                 break;
@@ -538,15 +533,15 @@ int main(int argc, char **argv)
                 {
                 case BEQ: // Branch if equal
                 {
-                    std::cout << "BEQ x" << rs1 << ", x" << rs2 << ", " << bImmed << std::endl;
+                    std::cout << "BEQ x" << rs1 << ", x" << rs2 << ", " << Branch_Immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 == temp_rs2)
                     {
                         std::cout << "equal to" << std::endl
                                   << std::endl;
-                        jumping = bImmed;
-                        PC += bImmed;
+                        jumping = Branch_Immed;
+                        PC += Branch_Immed;
                         branched = true;
                     }
                     else
@@ -559,15 +554,15 @@ int main(int argc, char **argv)
                 }
                 case BNE: // Branch if not equal
                 {
-                    std::cout << "BNE x" << rs1 << ", x" << rs2 << ", " << bImmed << std::endl;
+                    std::cout << "BNE x" << rs1 << ", x" << rs2 << ", " << Branch_Immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 != temp_rs2)
                     {
                         std::cout << "not equal to" << std::endl
                                   << std::endl;
-                        jumping = bImmed;
-                        PC += bImmed;
+                        jumping = Branch_Immed;
+                        PC += Branch_Immed;
                         branched = true;
                     }
                     else
@@ -579,15 +574,15 @@ int main(int argc, char **argv)
                 }
                 case BLT: // Branch if Less than
                 {
-                    std::cout << "BLT x" << rs1 << ", x" << rs2 << ", " << bImmed << std::endl;
+                    std::cout << "BLT x" << rs1 << ", x" << rs2 << ", " << Branch_Immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 < temp_rs2)
                     {
                         std::cout << "less than" << std::endl
                                   << std::endl;
-                        jumping = bImmed;
-                        PC += bImmed;
+                        jumping = Branch_Immed;
+                        PC += Branch_Immed;
                         branched = true;
                     }
                     else
@@ -599,15 +594,15 @@ int main(int argc, char **argv)
                 }
                 case BGE: // Branch if greater than or equal
                 {
-                    std::cout << "BGE x" << rs1 << ", x" << rs2 << ", " << bImmed << std::endl;
+                    std::cout << "BGE x" << rs1 << ", x" << rs2 << ", " << Branch_Immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if (temp_rs1 >= temp_rs2)
                     {
                         std::cout << "greater than or equal" << std::endl
                                   << std::endl;
-                        jumping = bImmed;
-                        PC += bImmed;
+                        jumping = Branch_Immed;
+                        PC += Branch_Immed;
                         branched = true;
                     }
                     else
@@ -619,15 +614,15 @@ int main(int argc, char **argv)
                 }
                 case BLTU: // Branch if Less Than (unsigned)
                 {
-                    std::cout << "BLTU x" << rs1 << ", x" << rs2 << ", " << bImmed << std::endl;
+                    std::cout << "BLTU x" << rs1 << ", x" << rs2 << ", " << Branch_Immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if ((unsigned)temp_rs1 < (unsigned)temp_rs2)
                     {
                         std::cout << "less than" << std::endl
                                   << std::endl;
-                        jumping = bImmed;
-                        PC += bImmed;
+                        jumping = Branch_Immed;
+                        PC += Branch_Immed;
                         branched = true;
                     }
                     else
@@ -639,15 +634,15 @@ int main(int argc, char **argv)
                 }
                 case BGEU: // Branch if Greater or Equal to (unsigned)
                 {
-                    std::cout << "BGEU x" << rs1 << ", x" << rs2 << ", " << bImmed << std::endl;
+                    std::cout << "BGEU x" << rs1 << ", x" << rs2 << ", " << Branch_Immed << std::endl;
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
                     if ((unsigned)temp_rs1 >= (unsigned)temp_rs2)
                     {
                         std::cout << "greater or equal to" << std::endl
                                   << std::endl;
-                        jumping = bImmed;
-                        PC += bImmed;
+                        jumping = Branch_Immed;
+                        PC += Branch_Immed;
                         branched = true;
                     }
                     else
@@ -782,59 +777,14 @@ int main(int argc, char **argv)
     // printing mem
     if (printMem)
     {
-        std::cout << "     ____________________________________________" << std::endl;
-        std::cout << "    |                   MEMORY                   |" << std::endl;
-        std::cout << "  __|____________________________________________|__" << std::endl;
+        std::cout << "          ____________________________________________" << std::endl;
+        std::cout << "         |                   MEMORY                   |" << std::endl;
+        std::cout << "  _______|____________________________________________|_____" << std::endl;
         for (int i = 0; i < 128 && mem[i].data != 0; i++)
         {
-            std::cout << " |Number: " << std::setw(4) << i << " | Address: " << std::setw(12) << mem[i].address << " | Data: " << std::setw(4) << mem[i].data << " |" << std::endl;
+            std::cout << " |Number: " << std::setw(4) << i << " | Address: " << std::setw(12) << mem[i].address << " | Data: " << std::setw(12) << mem[i].data << " |" << std::endl;
         }
-        std::cout << " |_____________|_______________________|____________|" << std::endl;
+        std::cout << " |_____________|_______________________|____________________|" << std::endl;
     }
     return 0;
-}
-
-void printOptions()
-{
-    std::cout << "Options:" << std::endl
-              << "    - 'r' runs the entire program in one go till it hits a breakpoint or exits." << std::endl
-              << "    - 's' runs the next instruction and then stops and waits for next command." << std::endl
-              << "    - 'x0' to 'x31' return the contents of the register from the register file (x0 must always stay 0)." << std::endl
-              << "    - '0x12345678' returns the contents from the address 0x12345678 in the data memory. " << std::endl
-              << "       This should work for all 32 bit addresses, the value shown above is an example." << std::endl
-              << "    - 'pc' returns the value of the PC" << std::endl;
-}
-// Converts signed binary to decimal
-int binaryToDecimal(long n)
-{
-    long temp = n;
-    long dec = 0;
-    long base = 1;
-
-    while (temp)
-    {
-        long last = temp % 10;
-        temp = temp / 10;
-        dec += last * base;
-        base *= 2;
-    }
-    dec = (dec + 128) % 256 - 128;
-    return dec;
-}
-
-// Finds two's complement of binary input
-long twosComplement(std::string str)
-{
-    for (int i = 0; i < str.length(); i++)
-    {
-        if (str[i] == '1')
-            str[i] = '0';
-        else if (str[i] == '0')
-            str[i] = '1';
-    }
-    long temp = 0;
-    temp = stol(str, nullptr, 2);
-    temp *= -1;
-    temp -= 1;
-    return temp;
 }
