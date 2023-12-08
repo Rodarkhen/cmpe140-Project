@@ -1,3 +1,9 @@
+/*  Group Names: David Wei, Matthew Malvini, Michelle Fang, Rodrigo Chen, Sammy Cuaderno
+    Course: CMPE 140
+    Assignment: RISCV Project
+    Date: 12/08/2023
+    Descrption: This program emulates a five stage RISCV CPU.
+*/
 #include <iostream>
 #include <fstream>
 #include <string>
