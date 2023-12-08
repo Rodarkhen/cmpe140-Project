@@ -175,20 +175,23 @@ int main(int argc, char **argv)
                     {
                         std::string num = currentInput.substr(1, 2);
                         int n = stol(num, nullptr, 10);
-                        std::cout << "contents for register " << n << ": 0x" << std::hex << std::setw(8) << std::setfill('0') << registers[n].value << std::dec << std::endl;
+                        std::cout << "contents for register " << n << ": 0x" << std::hex << std::setw(8) << std::setfill('0')
+                                  << registers[n].value << std::dec << std::endl;
                         brk = false;
                     }
                 }
                 else if (hex.compare("0x") == 0)
                 { // Prints mem data based on mem addr
                     prevInput = "hex";
-                    std::string addr = currentInput.substr(2, 8);
-                    int a = stol(addr, nullptr, 16);
+                    std::string addr = currentInput.substr(2, 9);
+                    int32_t a = stol(addr, nullptr, 10);
+                    // std::cout << a << " | " << addr << std::endl;
                     for (int i = 0; i < 128; i++)
                     {
+                        // std::cout << "mem Addr: " << mem[i].address << std::endl;
                         if (mem[i].address == a)
                         {
-                            std::cout << "contents from address 0x" << addr << ": 0x" << std::hex << mem[i].data << std::dec << std::endl;
+                            std::cout << "Contents from addr " << addr << ": " << std::dec << mem[i].data << std::endl;
                         }
                     }
                     brk = false;
