@@ -289,7 +289,7 @@ int main(int argc, char **argv)
                 {
                     std::cout << "ORI " << registerNames[rd] << ", " << registerNames[rs1] << ", " << immed << std::endl; // check if temp_rs1 is less that imm value, then set registers[rd] to 1
                     int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;                                      // d_write[rs1].value : rs1
-                    registers[rd].value = temp_rs1 ^ immed;
+                    registers[rd].value = temp_rs1 | immed;
                     registers[rd].used = true;
                     std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
