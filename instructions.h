@@ -93,3 +93,38 @@ public:
     // Constructor
     dmem() : address(0), data(0){};
 };
+
+// Converts signed binary to decimal
+int binaryToDecimal(long n)
+{
+    long temp = n;
+    long dec = 0;
+    long base = 1;
+
+    while (temp)
+    {
+        long last = temp % 10;
+        temp = temp / 10;
+        dec += last * base;
+        base *= 2;
+    }
+    dec = (dec + 128) % 256 - 128;
+    return dec;
+}
+
+// Finds two's complement of binary input
+long twosComplement(std::string str)
+{
+    for (int i = 0; i < str.length(); i++)
+    {
+        if (str[i] == '1')
+            str[i] = '0';
+        else if (str[i] == '0')
+            str[i] = '1';
+    }
+    long temp = 0;
+    temp = stol(str, nullptr, 2);
+    temp *= -1;
+    temp -= 1;
+    return temp;
+}
