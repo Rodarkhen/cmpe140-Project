@@ -41,13 +41,12 @@ int main(int argc, char **argv)
     // Get instructions from files
     int lineCount = 0;
     std::string line;
-
+    std::string subInstruction = "";
     int idx = 0; // index of mem
 
     // If second file param entered -> dmem file
     if (argc == 3) //./test line.dat dmem.dat
     {
-        std::string subInstruction = "";
         std::string dmemfilename = argv[2];
         std::ifstream dmemFile;
         dmemFile.open(dmemfilename);
@@ -100,11 +99,31 @@ int main(int argc, char **argv)
     bool dmem_wen = false; // Write enable for data memory (1 for Store, 0 for Load)
     int count = 0;         // index for going through imem
 
-    // Reads a file with instructions (32'b instruction per line)
+    // Reads a file with instructions
     while (getline(inputFile, line))
     {
-        in_instructions[index].instruction = line;
-        index++;
+        if (line.size() == 32) // (32'b instruction per line)
+        {
+            in_instructions[index].instruction = line;
+            index++;
+        }
+        else if (line.size() == 8) //'(8'b instruction per line * 4 )
+        {
+            subInstruction = line + subInstruction;
+            lineCount++;
+            if (lineCount % 4 == 0)
+            {
+                in_instructions[index].instruction = subInstruction;
+                lineCount = 0;
+                subInstruction = "";
+                index++;
+            }
+        }
+        else
+        {
+            std::cout << "wrong format for instruction. Please Check your instruction file" << std::endl;
+            exit(1);
+        }
     }
 
     // Shows available options fo the user
