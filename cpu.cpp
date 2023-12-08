@@ -139,7 +139,7 @@ int main(int argc, char **argv)
                     brk = true;
                 }
                 else if (reg.compare("x") == 0)
-                { // prints reg value based on reg num
+                { // Prints reg value based on reg num
                     prevInput = "reg";
                     if (currentInput.size() == 1)
                     { // just input x->give error or else stops the prog
@@ -155,7 +155,7 @@ int main(int argc, char **argv)
                     }
                 }
                 else if (hex.compare("0x") == 0)
-                { // prints mem data based on mem addr
+                { // Prints mem data based on mem addr
                     prevInput = "hex";
                     std::string addr = currentInput.substr(2, 8);
                     int a = stol(addr, nullptr, 16);
@@ -175,9 +175,7 @@ int main(int argc, char **argv)
                     brk = false;
                 }
                 else
-                {
                     brk = false;
-                }
             }
             brk = false;
             //====================================================//
@@ -212,19 +210,19 @@ int main(int argc, char **argv)
             rs2 = binToDec(stol(in_instructions[count].rs2, nullptr, 10));
             // rs1, func3, rd, opcode are similar to the I-Type format
 
-            // Store format
+            // Store format //
             in_instructions[count].StoreImmed = in_instructions[count].R_immed + in_instructions[count].rd;
             StoreImmed = binToDec(stol(in_instructions[count].StoreImmed, nullptr, 10));
 
-            // U format
+            // U format //
             in_instructions[count].UI_Immed = in_instructions[count].instruction.substr(0, 20);
             UI_Immed = (in_instructions[count].UI_Immed[0] == '1') ? twosComplement(in_instructions[count].UI_Immed) : stol(in_instructions[count].UI_Immed, nullptr, 2);
 
-            // UJ format
+            // UJ format //
             in_instructions[count].UJ_Immed = in_instructions[count].instruction.substr(0, 1) + in_instructions[count].instruction.substr(12, 8) + in_instructions[count].instruction.substr(11, 1) + in_instructions[count].instruction.substr(1, 10) + "0";
             UJ_Immed = (in_instructions[count].UJ_Immed[0] == '1') ? twosComplement(in_instructions[count].UJ_Immed) : stol(in_instructions[count].UJ_Immed, nullptr, 2);
 
-            // branch format --lowest bit offest is always 0
+            // Branch format --lowest bit offest is always 0
             in_instructions[count].Branch_Immed = in_instructions[count].R_immed.substr(0, 1) + in_instructions[count].rd.substr(4, 1) + in_instructions[count].R_immed.substr(1, 6) + in_instructions[count].rd.substr(0, 4) + '0';
             Branch_Immed = binToDec(stol(in_instructions[count].Branch_Immed, nullptr, 10));
             Branch_Immed = (in_instructions[count].Branch_Immed[0] == '1') ? twosComplement(in_instructions[count].Branch_Immed) : stol(in_instructions[count].Branch_Immed, nullptr, 2);
@@ -387,13 +385,9 @@ int main(int argc, char **argv)
                     int temp_rs2 = registers[rs2].used ? registers[rs2].value : rs2;
 
                     if (temp_rs1 < temp_rs2)
-                    {
                         registers[rd].value = 1;
-                    }
                     else
-                    {
                         registers[rd].value = 0;
-                    }
                     registers[rd].used = true;
                     std::cout << "Result: " << registers[rd].value << std::endl
                               << std::endl;
@@ -474,49 +468,7 @@ int main(int argc, char **argv)
                 }
                 }
                 break;
-            }         // End of R_type_format
-            case LUI: // Load Upper Immediate
-            {
-                std::cout << "LUI " << registerNames[rd] << ", " << UI_Immed << std::endl;
-                registers[rd].value = UI_Immed << 12;
-                registers[rd].used = true;
-                std::cout << "Result: " << registers[rd].value << std::endl
-                          << std::endl;
-                break;
-            }
-            case AUIPC: // Add Upper Imm to PC
-            {
-                std::cout << "AUIPC " << registerNames[rd] << ", " << UI_Immed << std::endl;
-                registers[rd].value = PC + (UI_Immed << 12);
-                registers[rd].used = true;
-                std::cout << "Result: " << registers[rd].value << std::endl
-                          << std::endl;
-                break;
-            }
-            case JAL: // Jump and Link
-            {
-                std::cout << "JAL " << registerNames[rd] << ", " << UJ_Immed << std::endl;
-                // cannot change value of x0
-                if (rd != 0)
-                {
-                    registers[rd].value = PC + 4;
-                    registers[rd].used = true;
-                }
-                toJump = UJ_Immed;
-                jumped = true;
-                PC += UJ_Immed;
-                std::cout << "Reg/RA: " << registers[rd].value << " | PC: " << PC << std::endl
-                          << std::endl;
-                break;
-            }
-            case JALR: // Jump and Link with register
-            {
-                std::cout << "JALR " << registerNames[rd] << ", " << immed << "(" << registerNames[rs1] << ")" << std::endl;
-                toJump = immed + rs1;
-                PC = immed + rs1 + PC;
-                jumped = true;
-                break;
-            }
+            } // End of R_type_format
             case Branch_format:
             {
                 switch (func3)
@@ -650,6 +602,48 @@ int main(int argc, char **argv)
                 }
                 break;
             }
+            case LUI: // Load Upper Immediate
+            {
+                std::cout << "LUI " << registerNames[rd] << ", " << UI_Immed << std::endl;
+                registers[rd].value = UI_Immed << 12;
+                registers[rd].used = true;
+                std::cout << "Result: " << registers[rd].value << std::endl
+                          << std::endl;
+                break;
+            }         // End fof Branch Format
+            case JAL: // Jump and Link
+            {
+                std::cout << "JAL " << registerNames[rd] << ", " << UJ_Immed << std::endl;
+                // cannot change value of x0
+                if (rd != 0)
+                {
+                    registers[rd].value = PC + 4;
+                    registers[rd].used = true;
+                }
+                toJump = UJ_Immed;
+                jumped = true;
+                PC += UJ_Immed;
+                std::cout << "Reg/RA: " << registers[rd].value << " | PC: " << PC << std::endl
+                          << std::endl;
+                break;
+            }
+            case JALR: // Jump and Link with register
+            {
+                std::cout << "JALR " << registerNames[rd] << ", " << immed << "(" << registerNames[rs1] << ")" << std::endl;
+                toJump = immed + rs1;
+                PC = immed + rs1 + PC;
+                jumped = true;
+                break;
+            }
+            case AUIPC: // Add Upper Imm to PC
+            {
+                std::cout << "AUIPC " << registerNames[rd] << ", " << UI_Immed << std::endl;
+                registers[rd].value = PC + (UI_Immed << 12);
+                registers[rd].used = true;
+                std::cout << "Result: " << registers[rd].value << std::endl
+                          << std::endl;
+                break;
+            }
             default:
             {
                 // std::cout<<"not valid instruction"<<std::endl;
@@ -670,7 +664,7 @@ int main(int argc, char **argv)
                 int temp_rs1 = registers[rs1].used ? registers[rs1].value : rs1;
                 int address = temp_rs1 + immed;
                 temp_address = address;
-                std::cout << "address: " << address << std::endl;
+                std::cout << "Address: " << address << std::endl;
                 break;
             }                  // End of Load Word
             case Store_format: // Store word

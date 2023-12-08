@@ -53,8 +53,8 @@ public:
     std::string immed;        // 12'b [31:20]
     std::string R_immed;      // 7'b [31:25] func7 - (First seven bits of immed)
     std::string rs2;          // 5'b [24:20]
-    std::string StoreImmed;   // 7'b + 5'b = 12'b [31:25][11:7] (First 7'b of immed and 5 bits from rd)
-    std::string UI_Immed;     // 21 bit immed for lui + auipc
+    std::string StoreImmed;   // 12'b [31:25][11:7] (First 7'b of immed and 5 bits from rd)
+    std::string UI_Immed;     // 20'b immed for lui + auipc
     std::string Branch_Immed; // [31:12] branch immed
     std::string UJ_Immed;     // jal instruction immed
 
@@ -84,6 +84,12 @@ public:
     bool used;
     // Constructor
     Reg() : value(0), used(false){};
+
+    void updateRegister(int32_t result)
+    {
+        value = result;
+        used = true;
+    }
 };
 
 class Dmem
